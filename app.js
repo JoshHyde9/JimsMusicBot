@@ -1,3 +1,4 @@
+// Include Packages
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const iterate = require("iterate-js");
@@ -7,9 +8,8 @@ const fs = require("fs");
 const getYouTubeID = require("get-youtube-id");
 const fetchVideoInfo = require("youtube-info");
 
-var config = JSON.parse(
-  fs.readFileSync("./settings.json", "utf-8").substring(1)
-);
+// Include settings.json
+var config = JSON.parse(fs.readFileSync("./settings.json", "utf-8").substring(1));
 
 const yt_api_key = config.yt_api_key;
 const bot_controller = config.bot_controller;
@@ -18,16 +18,15 @@ const discord_token = config.discord_token;
 
 var guilds = {};
 
+// Start the bot
 client.login(discord_token);
 
 client.on("message", function(message) {
   const member = message.member;
   const mess = message.content.toLowerCase();
-  const args = message.content
-    .split(" ")
-    .slice(1)
-    .join(" ");
+  const args = message.content.split(" ").slice(1).join(" ");
 
+  // Make bot work on multiple servers at once
   if (!guilds[message.guild.id]) {
     guilds[message.guild.id] = {
       queue: [],
@@ -40,24 +39,23 @@ client.on("message", function(message) {
     };
   }
 
+  // Play Command
   if (mess.startsWith(prefix + "play")) {
-    if (
-      message.member.voiceChannel ||
-      guilds[message.guild.id].voiceChannel != null
-    ) {
-      if (
-        guilds[message.guild.id].queue.length > 0 ||
-        guilds[message.guild.id].isPlaying
-      ) {
+    // Check if user is in a voice channel
+    if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
+      // Check if the queue is greater than 0 or if the bot is playing music
+      if (guilds[message.guild.id].queue.length > 0 || guilds[message.guild.id].isPlaying) {
         getID(args, function(id) {
-          add_to_queue(id, message);
+          add_to_queue(id, message); // Add the song to queue
           fetchVideoInfo(id, function(err, videoInfo) {
             if (err) throw new Error(err);
-            guilds[message.guild.id].queueNames.push(videoInfo.title);
+            guilds[message.guild.id].queueNames.push(videoInfo.title);  // Add the reuqested song to queue
             message.reply("Added To Queue **" + videoInfo.title + "!**");
           });
         });
-      } else {
+      }
+      // Push all queued songs up 1 in the queue
+      else {
         isPlaying = true;
         getID(args, function(id) {
           guilds[message.guild.id].queue.push(id);
@@ -69,53 +67,57 @@ client.on("message", function(message) {
           });
         });
       }
-    } else {
+    }
+    else {
       message.reply("You must be in a voice channel first!");
     }
-  } else if (mess.startsWith(prefix + "skip")) {
+  }
+
+  // Skip Command
+  else if (mess.startsWith(prefix + "skip")) {
     skip_song(message);
     message.reply("Skipped Song!");
-  } else if (mess.startsWith(prefix + "leave")) {
+  }
+
+  // Leave Command
+  else if (mess.startsWith(prefix + "leave")) {
+    // Check if user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
-    if (
-      message.member.voiceChannel ||
-      guilds[message.guild.id].voiceChannel != null
-    ) {
-      guilds[message.guild.id].queue.length = 0;
-      guilds[message.guild.id].dispatcher.isPlaying = false;
+    // Leave the voice channel
+    if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
+      guilds[message.guild.id].queue.length = 0; // Set queue length to 0
+      guilds[message.guild.id].dispatcher.isPlaying = false; // stop playing music
       guilds[message.guild.id].dispatcher.pause = true;
-      guilds[message.guild.id].dispatcher.end();
-      guilds[message.guild.id].voiceChannel.leave();
-    } else {
+      guilds[message.guild.id].dispatcher.end(); // End the song
+      guilds[message.guild.id].voiceChannel.leave(); // Leave the voice channel
+    }
+    else {
       message.channel.send("I must be in a voice channel first to leave!");
       return;
     }
-  } else if (mess.startsWith(prefix + "queue")) {
+  }
+
+  // Queue Command
+  else if (mess.startsWith(prefix + "queue")) {
+    // Check if user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
+    // Check if there are any queued songs
     if (guilds[message.guild.id].queueNames.length <= 0) {
       message.channel.send("No songs in queue!");
       return;
     }
 
+    // Put the queue in a nice embed
     for (var i = 0; i < guilds[message.guild.id].queueNames.length; i++) {
-      var temp =
-        i +
-        1 +
-        ": " +
-        guilds[message.guild.id].queueNames[i] +
-        (i === 0 ? " **(Current Song)**" : "") +
-        "\n";
+      var temp = i + 1 + ": " + guilds[message.guild.id].queueNames[i] + (i === 0 ? " **(Current Song)**" : "") + "\n";
 
+      // embed
       var embed = new Discord.RichEmbed()
         .setTitle("Song Queue")
         .setColor("RANDOM")
@@ -123,99 +125,116 @@ client.on("message", function(message) {
 
       message.channel.send(embed);
     }
-  } else if (mess.startsWith(prefix + "pause")) {
+  }
+
+  // Pause Command
+  else if (mess.startsWith(prefix + "pause")) {
+    // Check if user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
+    // Check if there are any songs in the queue
     if (guilds[message.guild.id].queueNames.length <= 0) {
       message.channel.send("No songs in queue to pause!");
       return;
     }
 
-    if (
-      message.member.voiceChannel ||
-      guilds[message.guild.id].voiceChannel != null
-    ) {
+    // Pause the song
+    // Check if the bot is in a voice channel
+    if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
       guilds[message.guild.id].dispatcher.pause();
       message.channel.send(":pause_button: Song Paused!");
-    } else {
+    }
+    else {
       message.channel.send("I need to be in the voice channel to pause music!");
     }
-  } else if (mess.startsWith(prefix + "resume")) {
+  }
+
+  // Resume Command
+  else if (mess.startsWith(prefix + "resume")) {
+    // Check if user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
+    // Check if there are any songs in the queue
     if (guilds[message.guild.id].queueNames.length <= 0) {
       message.channel.send("No songs in queue to resume playing!");
       return;
     }
-    if (
-      message.member.voiceChannel ||
-      guilds[message.guild.id].voiceChannel != null
-    ) {
+
+    // Resume the song
+    // Check if the bot is in a voice channel
+    if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
       guilds[message.guild.id].dispatcher.resume();
       message.channel.send(":arrow_forward: Song Resumed!");
-    } else {
+    }
+    else {
       message.channel.send("I need to be in a voice channel to resume music!");
     }
-  } else if (mess.startsWith(prefix + "stop")) {
+  }
+
+  // Stop Command
+  else if (mess.startsWith(prefix + "stop")) {
+    // Check if user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
+    // Check if the queue is empty
     if (guilds[message.guild.id].queueNames.length <= 0) {
       message.channel.send("No songs in queue to stop!");
       return;
     }
-    if (
-      message.member.voiceChannel ||
-      guilds[message.guild.id].voiceChannel != null
-    ) {
-      guilds[message.guild.id].queue.length = 0;
-      guilds[message.guild.id].dispatcher.end();
+
+    // Stop the music
+    // Check if the bot is in a voice channel
+    if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
+      guilds[message.guild.id].queue.length = 0; // Remove every song from the queue
+      guilds[message.guild.id].dispatcher.end(); // End the song
       message.channel.send("Music stopped!");
-    } else {
+    }
+    else {
       message.channel.send("I need to be in a voice channel to stop music!");
       return;
     }
-  } else if (mess.startsWith(prefix + "volume")) {
+  }
+
+  // Volume Command
+  else if (mess.startsWith(prefix + "volume")) {
+    // Check if the user is in the same voice channel as the bot
     if (message.member.voiceChannel !== message.guild.me.voiceChannel) {
-      return message.channel.send(
-        "You need to be in the same voice channel as the bot!"
-      );
+      return message.channel.send("You need to be in the same voice channel as the bot!");
     }
 
+    // Another args because I am lazy
     const args1 = message.content.split(" ").slice(1);
 
+    // Check if the user input is between 0 and 200
     if (isNaN(args1[0]) || args1[0] > 200 || args1[0] < 0) {
       return message.channel.send("Please input a number between 0 - 200");
     }
 
-    var volume = args1[0] / 200;
-    guilds[message.guild.id].dispatcher.setVolume(volume);
-    message.channel.send(`Volume set to ${volume * 100}%`);
-  } else if (mess.startsWith(prefix + "help")) {
+    var volume = args1[0] / 200; // Divide the user inout by 200
+    guilds[message.guild.id].dispatcher.setVolume(volume); // Set the volume
+    message.channel.send(`Volume set to ${volume * 100}%`); // Times the divided number 100 to get a percentage
+  }
+
+  // Help Command
+  else if (mess.startsWith(prefix + "help")) {
     var embed = new Discord.RichEmbed()
       .setColor("RANDOM")
       .setAuthor("Help Commands")
       .setTitle("Using the prefix ')'")
       .setThumbnail("https://i.imgur.com/CWHCGJB.png")
-      .setDescription(
-        "**Play:** Plays a song via YouTube search.\n**Queue:** Prints the current song queue.\n**Skip:** Skips the song playing.\n**Pause:** Pauses the song playing.\n**Resume:** Resumes the song that was paused.\n**Stop:** Stops the queue.\n**Leave:** Leaves the voice channel.\n**Volume:** Sets the songs volume to a set number.\n"
-      );
+      .setDescription("**Play:** Plays a song via YouTube search.\n**Queue:** Prints the current song queue.\n**Skip:** Skips the song playing.\n**Pause:** Pauses the song playing.\n**Resume:** Resumes the song that was paused.\n**Stop:** Stops the queue.\n**Leave:** Leaves the voice channel.\n**Volume:** Sets the songs volume to a set number.\n");
 
     message.channel.send(embed);
   }
 });
 
+// Changing bot status
 function ChangingBotStatus() {
   let Statuses = [
     "September - Earth, Wind & Fire",
@@ -239,21 +258,22 @@ function ChangingBotStatus() {
     "Humble - Kendrick Lamar",
     "Loyalty. Feat. Rihanna - Kendrick Lamar, Rihanna"
   ];
-  let RandomStatus = Statuses[Math.floor(Math.random() * Statuses.length)];
-  client.user.setActivity(RandomStatus);
+  let RandomStatus = Statuses[Math.floor(Math.random() * Statuses.length)]; // Grab a random song from the array
+  client.user.setActivity(RandomStatus); // Set the song status
 }
 
 client.on("ready", function() {
-  setInterval(ChangingBotStatus, 240000);
-  console.log("I am working (kinda).");
+  setInterval(ChangingBotStatus, 240000); // Set the random song status every 4 minutes
+  console.log("I am working (kinda)."); // Log if the bot is working
 });
 
+// Play Music
 function PlayMusic(id, message) {
   guilds[message.guild.id].voiceChannel = message.member.voiceChannel;
 
   guilds[message.guild.id].voiceChannel.join().then(function(connection) {
     stream = ytdl("https://www.youtube.com/watch?v=" + id, {
-      filter: "audioonly"
+      filter: "audioonly" // Filter out video for better streaming
     });
     guilds[message.guild.id].skipReq = 0;
     guilds[message.guild.id].skippers = [];
@@ -277,10 +297,12 @@ function PlayMusic(id, message) {
   });
 }
 
+// Skip Song
 function skip_song(message) {
   guilds[message.guild.id].dispatcher.end();
 }
 
+// Get Youtube video ID
 function getID(str, callback) {
   if (isYouTube(str)) {
     callback(getYouTubeID(str));
@@ -291,6 +313,7 @@ function getID(str, callback) {
   }
 }
 
+// Add Song to queue
 function add_to_queue(strID, message) {
   if (isYouTube(strID)) {
     guilds[message.guild.id].queue.push(getYouTubeID(str));
@@ -299,12 +322,9 @@ function add_to_queue(strID, message) {
   }
 }
 
+// Search for the user input
 function search_video(query, callback) {
-  request(
-    "https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=" +
-      encodeURIComponent(query) +
-      "&key=" +
-      yt_api_key,
+  request("https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=" + encodeURIComponent(query) + "&key=" + yt_api_key,
     function(error, response, body) {
       var json = JSON.parse(body);
       if (!json.items[0]) callback("jAUXTl6fGVM");
