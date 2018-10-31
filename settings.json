@@ -1,0 +1,7 @@
+﻿{
+  "yt_api_key": "YouTube API key goes here!",
+  "discord_token": "Discord Token goes here!",
+  "bot_controller": "role id",
+  "prefix": ")"
+
+}

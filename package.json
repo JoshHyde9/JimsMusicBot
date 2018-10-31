@@ -1,0 +1,19 @@
+{
+  "name": "music-bot",
+  "version": "0.0.0",
+  "description": "MusicBot",
+  "main": "app.js",
+  "author": {
+    "name": "Josh's PC"
+  },
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "ffmpeg-binaries": "^3.2.2-3",
+    "get-youtube-id": "^1.0.0",
+    "iterate-js": "^1.1.0",
+    "opusscript": "0.0.6",
+    "relevant-urban": "^2.0.0",
+    "youtube-info": "^1.2.0",
+    "ytdl-core": "^0.20.4"
+  }
+}
