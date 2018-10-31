@@ -5,7 +5,7 @@ A basic Discord Music bot written in Node.js.
 
 ### For Visual Studio 
 0 - Download the zipped file.     
-1 - Open the MusicBot.sln and intall the required packages.    
+1 - Open the MusicBot.sln and intall the required packages using NuGet Package Manager.    
 2 - In the settings.json input your own YouTube API key and own Discord Token in the space provided.  
 
 ### For Text Editors
