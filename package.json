@@ -4,7 +4,7 @@
   "description": "MusicBot",
   "main": "app.js",
   "author": {
-    "name": "Josh's PC"
+    "name": "Josh Hyde"
   },
   "dependencies": {
     "discord.js": "^11.3.2",
