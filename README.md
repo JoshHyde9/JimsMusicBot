@@ -2,11 +2,11 @@
 A basic Discord Music bot written in Node.js
 
 ## Packages Installed
-Discord.js   
-ffmpeg-binaries 
-get-youtube-id  
-iterate-js  
-upusscript  
-relevant-urban  
-youtube-info  
-ytdl-core  
+0 - Discord.js   
+1 - ffmpeg-binaries 
+2 - get-youtube-id  
+3 - iterate-js  
+4 - upusscript  
+5 - relevant-urban  
+6 - youtube-info  
+7 - ytdl-core  
