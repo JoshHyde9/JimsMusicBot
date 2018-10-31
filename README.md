@@ -1,5 +1,8 @@
 # Jim's Music Bot
-A basic Discord Music bot written in Node.js
+A basic Discord Music bot written in Node.js.
+
+# How To Use
+Download the zipped file and in the settings.json input your own YouTube API key and own Discord Token.
 
 ## Packages Installed
 0 - Discord.js   
