@@ -167,7 +167,7 @@ client.on("message", function(message) {
     // Resume the song
     // Check if the bot is in a voice channel
     if (message.member.voiceChannel || guilds[message.guild.id].voiceChannel != null) {
-      guilds[message.guild.id].dispatcher.resume();
+      guilds[message.guild.id].dispatcher.resume(); // Resume the song 
       message.channel.send(":arrow_forward: Song Resumed!");
     }
     else {
@@ -216,7 +216,7 @@ client.on("message", function(message) {
       return message.channel.send("Please input a number between 0 - 200");
     }
 
-    var volume = args1[0] / 200; // Divide the user inout by 200
+    var volume = args1[0] / 200; // Divide the user input by 200
     guilds[message.guild.id].dispatcher.setVolume(volume); // Set the volume
     message.channel.send(`Volume set to ${volume * 100}%`); // Times the divided number 100 to get a percentage
   }
