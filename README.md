@@ -7,6 +7,5 @@ A basic Discord Music bot written in Node.js
 2 - get-youtube-id   
 3 - iterate-js  
 4 - upusscript  
-5 - relevant-urban  
-6 - youtube-info  
-7 - ytdl-core  
+5 - youtube-info  
+6 - ytdl-core  
