@@ -1,4 +1,4 @@
-# JimsMusicBot
+# Jim's Music Bot
 A basic Discord Music bot written in Node.js
 
 ## Packages Installed
